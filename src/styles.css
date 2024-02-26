@@ -1,0 +1,35 @@
+.App {
+  font-family: sans-serif;
+  text-align: center;
+}
+.table {
+  padding: 27px;
+  table-layout: auto;
+  border: 3px solid wheat;
+  width: 53%;
+  margin: 50px 55px 30px 357px;
+  text-align: center;
+}
+.tableHead {
+  color: red;
+  font-size: large;
+}
+.edit {
+  color: #e67a7a;
+}
+.close {
+  color: #f24545;
+}
+.inputbox {
+  text-align: center;
+}
+.textArea {
+  width: 30%;
+  height: 64px;
+}
+.description {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
