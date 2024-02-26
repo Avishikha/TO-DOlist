@@ -1,90 +1,141 @@
 import "./styles.css";
 import TableList from "./TableList";
-import list from "./list.json";
+import { todos } from "./list";
 import { useEffect, useState } from "react";
-import { ITodo,IDate } from "./ITodoList";
+import { ITodo } from "./ITodoList";
+
 export default function App() {
-  let [toDolist, setToDoList] = useState<ITodo[]>(list.todos);
-  const [editBox, setEditBox] = useState<{ index: number; data: ITodo } | null>(
-    null,
-  );
+ 
+  const [toDolist, setToDoList] = useState<ITodo[]>(todos);
+  const [clickedOnEdit, setClickedOnEdit] = useState(null);
+  const [isEdit,setIsEdit] =useState(false)
   const [defaultValue, setDefaultValue] = useState<{
+    id:number,
     title: string;
     Description: string;
     estimatedDate: string;
   }>({
+    id:0,
     title: "",
     Description: "",
     estimatedDate: "",
   });
+  const  formatDate=(date:string)=> {
+    let d = new Date(date),
+        month = '' + (d.getMonth() + 1),
+        day = '' + d.getDate(),
+        year = d.getFullYear();
 
-  const [nextId, setNextId] = useState(0);
-  useEffect(() => {
-    setToDoList(list);
-  }, [list]);
-  const handleAdd = () => {
-    const newTask: ITodo = {
-      title: defaultValue.title,
-      Description: defaultValue.Description,
-      estimatedDate: defaultValue.estimatedDate,
-    };
-  toDolist.push([...newTask])
-    // Update the to-do list with the new task
-    setToDoList(toDolist);
-    // Clear the input fields or set them to default values
-    setDefaultValue(newTask);
-  };
+    if (month.length < 2) 
+        month = '0' + month;
+    if (day.length < 2) 
+        day = '0' + day;
 
-  const onEdit = (e: ITodo, listIndex: number) => {
-    console.log("Data from child:", e);
-    setEditBox({ index: listIndex, data: e });
-    setDefaultValue(e);
-  };
-  const handleInputChange = (e: any) => {
-    console.log(e, "avi");
-    setDefaultValue(e);
-  };
-const formatDate=(format:any)=>{
-  const today = new Date();
-const yyyy = today.getFullYear();
-let mm = today.getMonth() + 1; // Months start at 0!
-let dd = today.getDate();
-
-if (dd < 10) dd = '0' + dd;
-if (mm < 10) mm = '0' + mm;
-
-return format = dd + '-' + mm + '-' + yyyy;
+    return [year, month, day].join('-');
 }
-console.log(toDolist,"defaultValue.estimatedDate")
+  const newTask: ITodo = {
+    id: Math.random(),
+    title: defaultValue.title,
+    Description: defaultValue.Description,
+    estimatedDate: formatDate(defaultValue.estimatedDate),
+  };
+  const handleAdd = () => {
+      setToDoList([...toDolist, newTask]);
+    setDefaultValue({
+      id: 0,
+      title: '',
+      Description: '',
+      estimatedDate: '',
+    });
+  };
+  useEffect(()=>{
+    console.log(toDolist,"appp")
+setToDoList(toDolist)
+  },[toDolist])
+ const handleUpdate=()=>{
+  const existingTaskIndex = toDolist.findIndex((task) => task.id === clickedOnEdit);
+    const updatedToDolist = [...toDolist];
+   updatedToDolist[existingTaskIndex] = newTask;
+    setToDoList(updatedToDolist);
+    setIsEdit(false)
+    setDefaultValue({
+      id: 0,
+      title: '',
+      Description: '',
+      estimatedDate: '',
+    });
+ }
+ const handleCancel=()=>{
+  setIsEdit(false)
+  setDefaultValue({
+    id: 0,
+    title: '',
+    Description: '',
+    estimatedDate: '',
+  });
+ }
+  const onEdit = (e:any) => {
+    setIsEdit(true)
+    setClickedOnEdit(e.id)
+    setDefaultValue({...e});
+  };
+  const handleInputChange = (e: string,tag:string) => {
+    switch(tag){
+      case "title":
+     defaultValue.title=e
+      
+      break
+      case "description":
+        defaultValue.Description=e
+         
+         break
+         case "estimation":
+          defaultValue.estimatedDate=e
+           
+           break
+    }
+    setDefaultValue({ ...defaultValue});
+  }
+const updateList=(e:any)=>{
+ setToDoList(e)
+}
+console.log(defaultValue,"defaultValue.estimatedDate")
   return (
     <>
-      <div>
+      <div className="inputbox">
         <h1 className="App">TO DO list</h1>
         <p>Title</p>
         <input
-          type="text"
+          type="textBox"
           value={defaultValue.title}
-          onChange={(e: any) => handleInputChange(e.target.value)}
+          onChange={(e) => handleInputChange(e.target.value,"title")}
         ></input>
         <p>Description</p>
-        <input
-          type="textArea"
+        <textarea
+          className="textArea"
           value={defaultValue.Description}
-          onChange={(e: any) => handleInputChange(e.target.value)}
-        ></input>
+          placeholder="Start here..."
+          onChange={(e) => handleInputChange(e.target.value,"description")}
+        ></textarea>
         <p>Estimated Date</p>
         <input
           type="Date"
-          value={defaultValue.estimatedDate}
-          onChange={(e: any) => handleInputChange(e.target.value)}
+          value={formatDate(defaultValue.estimatedDate)}
+          onChange={(e) => handleInputChange(formatDate(e.target.value),"estimation")}
         ></input>
-        <button onClick={(e: any) => handleAdd()}>Add</button>
+        {!isEdit && <button onClick={() => handleAdd()}>Add</button>}
+       {isEdit && <button onClick={() => handleUpdate()}>Update</button>}
+       {isEdit && <button onClick={() => handleCancel()}>Cancel</button>}
       </div>
       <TableList
+      notifyUpdateList={(e)=>{  console.log(e);
+        updateList(e)
+      }}
+      clickOnEdit={clickedOnEdit}
         toDolist={toDolist}
-        notifyParent={(e: any) => {
+        notifyParent={(e) => {
           console.log(e);
-          onEdit(e, nextId);
+          onEdit(e);
         }}
       ></TableList>
     </>
